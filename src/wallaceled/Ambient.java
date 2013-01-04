@@ -18,6 +18,7 @@ public class Ambient {
 
     Robot robby; //creates object "robby" of robot class
     boolean interrupt = false;
+    boolean isrunning = false;
     LEDController ledcontrol;
     public Ambient(LEDController ledcon) {
         ledcontrol = ledcon;
@@ -30,6 +31,7 @@ public class Ambient {
 
     public void startAmb() {
         interrupt = false;
+        isrunning = true;
         Looper looper  = new Looper();
         looper.start();
         // ledcontrol.startFade();
@@ -51,7 +53,7 @@ public class Ambient {
             float r = 0;
             float g = 0;
             float b = 0;
-            int skipValue = 2; // skip this many pixels when reading screenshot
+            int skipValue = 10; // skip this many pixels when reading screenshot
             int x = toolkit.getScreenSize().width; //possibly displayWidth
             int y = toolkit.getScreenSize().height; //possible displayHeight instead
 
@@ -123,10 +125,11 @@ public class Ambient {
             if (interrupt) {
                 // interrupt and reset indicator
                 interrupt = false;
+                isrunning = false;
             } else {
                 try {
                     // sleep and repeat
-                    Thread.sleep(100);
+                    Thread.sleep(50);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Ambient.class.getName()).log(Level.SEVERE, null, ex);
                 }

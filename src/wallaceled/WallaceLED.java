@@ -39,7 +39,7 @@ public class WallaceLED extends javax.swing.JFrame {
             Logger.getLogger(WallaceLED.class.getName()).log(Level.SEVERE, null, ex);
             errorDialog(new String[]{"Error", "Failed to connect to the selected serial port, try selecting another port from the menu"});
         }
-        ledcontrol.startLED();
+        ledcontrol.andGodSaidLetThereBeLight();
     }
 
     /**
@@ -395,21 +395,40 @@ public class WallaceLED extends javax.swing.JFrame {
                     System.exit(0);
                 }
             };
-            PopupMenu popup = new PopupMenu();
-            MenuItem defaultItem = new MenuItem("Open");
-            defaultItem.addActionListener(new ActionListener() {
+            
+            ActionListener openListener = new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     setVisible(true);
                     setExtendedState(JFrame.NORMAL);
                 }
-            });
-            popup.add(defaultItem);
-            defaultItem = new MenuItem("Exit");
-            defaultItem.addActionListener(exitListener);
-            popup.add(defaultItem);
-            trayIcon = new TrayIcon(image, "iTunes AirSync", popup);
+            };
+            ActionListener lightListener = new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    MenuItem lightitem = (MenuItem) e.getSource();
+                    if (lightitem.getLabel().equals("Lights off")){
+                        ledcontrol.lightsOff();
+                        lightitem.setLabel("Lights on");
+                    } else {
+                        ledcontrol.lightsOn();
+                        lightitem.setLabel("Lights off");
+                    }
+                }
+            };
+            PopupMenu popup = new PopupMenu();
+            MenuItem menuItem = new MenuItem("Open");
+            menuItem.addActionListener(openListener);
+            popup.add(menuItem);
+            menuItem = new MenuItem("Lights off");
+            menuItem.addActionListener(lightListener);
+            popup.add(menuItem);
+            menuItem = new MenuItem("Exit");
+            menuItem.addActionListener(exitListener);
+            popup.add(menuItem);
+            trayIcon = new TrayIcon(image, "wallaceRGB", popup);
             trayIcon.setImageAutoSize(true);
         } else {
             System.out.println("system tray not supported");
