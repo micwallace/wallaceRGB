@@ -686,13 +686,13 @@ public class WallaceLED extends javax.swing.JFrame {
             JRadioButtonMenuItem btn = ((JRadioButtonMenuItem)e.getSource());
             String port = btn.getText();
             switch (port){
-                case("Ambient Mode"):
+                case "Ambient Mode":
                     ledcontrol.setMode(ledcontrol.AMBMODE);
                 break;
-                case("Sequence Mode"):
+                case "Sequence Mode":
                     ledcontrol.setMode(ledcontrol.SEQMODE);
                 break;
-                case("Manual Mode"):
+                case "Manual Mode":
                     ledcontrol.setMode(ledcontrol.MANMODE);
             }
             modegroup.setSelected(btn.getModel(), rootPaneCheckingEnabled);
