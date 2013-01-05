@@ -20,6 +20,8 @@ public class Ambient {
     boolean interrupt = false;
     boolean isrunning = false;
     LEDController ledcontrol;
+    int skipValue = 10; // skip this many pixels when reading screenshot
+    int captRate = 50; // ms to wait after each capture
     public Ambient(LEDController ledcon) {
         ledcontrol = ledcon;
         try {
@@ -34,11 +36,18 @@ public class Ambient {
         isrunning = true;
         Looper looper  = new Looper();
         looper.start();
-        // ledcontrol.startFade();
     }
 
     public void stopAmb() {
         interrupt = true;
+    }
+    
+    public void setPixelSkip(int pixels){
+        skipValue = pixels;
+    }
+    
+    public void setCaptureRate(int captrate){
+        captRate = captrate;
     }
 
     public class Looper extends Thread {
@@ -53,7 +62,7 @@ public class Ambient {
             float r = 0;
             float g = 0;
             float b = 0;
-            int skipValue = 10; // skip this many pixels when reading screenshot
+            
             int x = toolkit.getScreenSize().width; //possibly displayWidth
             int y = toolkit.getScreenSize().height; //possible displayHeight instead
 
@@ -129,7 +138,7 @@ public class Ambient {
             } else {
                 try {
                     // sleep and repeat
-                    Thread.sleep(50);
+                    Thread.sleep(captRate);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Ambient.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -142,6 +151,5 @@ public class Ambient {
     private void setColor(int[] rgb) {
         // pass to controller object
         ledcontrol.setColor(rgb);
-        // ledcontrol.setFadeColor(rgb); use fader
     }
 }

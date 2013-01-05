@@ -77,7 +77,7 @@
              minus the .jar extension. It should not have spaces.
              <property name="store.jar.name" value="MyJarName"/>
         -->
-        <property name="store.jar.name" value="ISyncMusicServer"/>
+        <property name="store.jar.name" value="wallaceLED"/>
 
 
         <!-- don't edit below this line -->
@@ -90,7 +90,7 @@
         <delete dir="${store.dir}"/>
         <mkdir dir="${store.dir}"/>
 
-        <jar destfile="${store.dir}/ISyncMusicServer.jar" filesetmanifest="skip">
+        <jar destfile="${store.dir}/temp_final.jar" filesetmanifest="skip">
             <zipgroupfileset dir="dist" includes="*.jar"/>
             <zipgroupfileset dir="dist/lib" includes="*.jar"/>
 

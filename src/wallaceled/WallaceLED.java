@@ -39,6 +39,9 @@ public class WallaceLED extends javax.swing.JFrame {
             Logger.getLogger(WallaceLED.class.getName()).log(Level.SEVERE, null, ex);
             errorDialog(new String[]{"Error", "Failed to connect to the selected serial port, try selecting another port from the menu"});
         }
+        // setup mode button groups
+        initModeButtons();
+        // start led control
         ledcontrol.andGodSaidLetThereBeLight();
     }
 
@@ -56,16 +59,43 @@ public class WallaceLED extends javax.swing.JFrame {
         colorcancelbtn = new javax.swing.JButton();
         colorapplybtn = new javax.swing.JButton();
         manprevcb = new javax.swing.JCheckBox();
+        settingsdialog = new javax.swing.JDialog();
+        settingspane = new javax.swing.JTabbedPane();
+        ambsettings = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        captsetting = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        pixelsetting = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        seqsettings = new javax.swing.JPanel();
+        intsetting = new javax.swing.JLabel();
+        fadeintsetting = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        faderatesetting = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        fadesetting = new javax.swing.JCheckBox();
+        jLabel11 = new javax.swing.JLabel();
+        cfadesetting = new javax.swing.JCheckBox();
+        cansettingbtn = new javax.swing.JButton();
+        applysetbtn = new javax.swing.JButton();
         ColorPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         FileMenu = new javax.swing.JMenu();
         QuitMenu = new javax.swing.JMenuItem();
         SettingMenu = new javax.swing.JMenu();
         PortMenu = new javax.swing.JMenu();
-        AmbMenu = new javax.swing.JCheckBoxMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        settingsbtn = new javax.swing.JMenuItem();
+        ModeMenu = new javax.swing.JMenu();
+        ambmoderb = new javax.swing.JRadioButtonMenuItem();
+        seqmoderb = new javax.swing.JRadioButtonMenuItem();
+        manmoderb = new javax.swing.JRadioButtonMenuItem();
 
         colordialog.setMinimumSize(new java.awt.Dimension(460, 300));
-        colordialog.setPreferredSize(new java.awt.Dimension(460, 300));
 
         colorcancelbtn.setText("Cancel");
         colorcancelbtn.addActionListener(new java.awt.event.ActionListener() {
@@ -114,6 +144,199 @@ public class WallaceLED extends javax.swing.JFrame {
                     .addComponent(manprevcb)))
         );
 
+        settingsdialog.setMinimumSize(new java.awt.Dimension(325, 275));
+
+        jLabel1.setText("Capture Rate:");
+
+        captsetting.setText("50");
+
+        jLabel2.setText("ms  (rate of screen captures)");
+
+        jLabel3.setText("Pixel Analysis:");
+
+        pixelsetting.setText("10");
+
+        jLabel4.setText("analyse every nth pixel");
+
+        javax.swing.GroupLayout ambsettingsLayout = new javax.swing.GroupLayout(ambsettings);
+        ambsettings.setLayout(ambsettingsLayout);
+        ambsettingsLayout.setHorizontalGroup(
+            ambsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ambsettingsLayout.createSequentialGroup()
+                .addGroup(ambsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(ambsettingsLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ambsettingsLayout.createSequentialGroup()
+                        .addGap(11, 11, 11)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(ambsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pixelsetting, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(captsetting, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
+                .addGroup(ambsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        ambsettingsLayout.setVerticalGroup(
+            ambsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ambsettingsLayout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(ambsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(captsetting, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(ambsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(pixelsetting, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addContainerGap(89, Short.MAX_VALUE))
+        );
+
+        settingspane.addTab("Ambience Mode", ambsettings);
+
+        intsetting.setText("Interval:");
+
+        fadeintsetting.setText("5");
+        fadeintsetting.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fadeintsettingActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("(seconds between each color change)");
+
+        jLabel7.setText("Rate:");
+
+        faderatesetting.setText("5");
+        faderatesetting.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                faderatesettingActionPerformed(evt);
+            }
+        });
+
+        jLabel8.setText("(1-20 1=fastest)");
+
+        jLabel9.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel9.setText("Fade");
+
+        jLabel10.setText("Fade:");
+
+        fadesetting.setSelected(true);
+        fadesetting.setText("(enable fading)");
+        fadesetting.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fadesettingActionPerformed(evt);
+            }
+        });
+
+        jLabel11.setText("Crossfade:");
+
+        cfadesetting.setSelected(true);
+        cfadesetting.setText("(don't black out before color change)");
+        cfadesetting.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cfadesettingActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout seqsettingsLayout = new javax.swing.GroupLayout(seqsettings);
+        seqsettings.setLayout(seqsettingsLayout);
+        seqsettingsLayout.setHorizontalGroup(
+            seqsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(seqsettingsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(seqsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel9)
+                    .addGroup(seqsettingsLayout.createSequentialGroup()
+                        .addComponent(intsetting)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fadeintsetting, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel6))
+                    .addGroup(seqsettingsLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(seqsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel11)
+                            .addComponent(jLabel10)
+                            .addComponent(jLabel7))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(seqsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(fadesetting)
+                            .addComponent(cfadesetting)
+                            .addGroup(seqsettingsLayout.createSequentialGroup()
+                                .addGap(4, 4, 4)
+                                .addComponent(faderatesetting, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel8)))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        seqsettingsLayout.setVerticalGroup(
+            seqsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(seqsettingsLayout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addGroup(seqsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(intsetting)
+                    .addComponent(fadeintsetting, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addGap(10, 10, 10)
+                .addComponent(jLabel9)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(seqsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(fadesetting))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(seqsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(cfadesetting))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(seqsettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(faderatesetting, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        settingspane.addTab("Seqences", seqsettings);
+
+        cansettingbtn.setText("Cancel");
+        cansettingbtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cansettingbtnActionPerformed(evt);
+            }
+        });
+
+        applysetbtn.setText("Apply");
+        applysetbtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applysetbtnActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout settingsdialogLayout = new javax.swing.GroupLayout(settingsdialog.getContentPane());
+        settingsdialog.getContentPane().setLayout(settingsdialogLayout);
+        settingsdialogLayout.setHorizontalGroup(
+            settingsdialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, settingsdialogLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(applysetbtn)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cansettingbtn))
+            .addComponent(settingspane)
+        );
+        settingsdialogLayout.setVerticalGroup(
+            settingsdialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(settingsdialogLayout.createSequentialGroup()
+                .addComponent(settingspane)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(settingsdialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cansettingbtn)
+                    .addComponent(applysetbtn)))
+        );
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
@@ -159,17 +382,33 @@ public class WallaceLED extends javax.swing.JFrame {
 
         PortMenu.setText("Serial Port");
         SettingMenu.add(PortMenu);
+        SettingMenu.add(jSeparator1);
 
-        AmbMenu.setSelected(true);
-        AmbMenu.setText("Ambient Mode");
-        AmbMenu.addActionListener(new java.awt.event.ActionListener() {
+        settingsbtn.setText("Settings...");
+        settingsbtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                AmbMenuActionPerformed(evt);
+                settingsbtnActionPerformed(evt);
             }
         });
-        SettingMenu.add(AmbMenu);
+        SettingMenu.add(settingsbtn);
 
         jMenuBar1.add(SettingMenu);
+
+        ModeMenu.setText("Mode");
+
+        ambmoderb.setSelected(true);
+        ambmoderb.setText("Ambient Mode");
+        ModeMenu.add(ambmoderb);
+
+        seqmoderb.setSelected(true);
+        seqmoderb.setText("Sequence Mode");
+        ModeMenu.add(seqmoderb);
+
+        manmoderb.setSelected(true);
+        manmoderb.setText("Manual Mode");
+        ModeMenu.add(manmoderb);
+
+        jMenuBar1.add(ModeMenu);
 
         setJMenuBar(jMenuBar1);
 
@@ -192,15 +431,6 @@ public class WallaceLED extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void AmbMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AmbMenuActionPerformed
-        // TODO add your handling code here:
-        if (this.AmbMenu.isSelected()){
-            ledcontrol.setMode(ledcontrol.AMBMODE);
-        } else {
-            ledcontrol.setMode(ledcontrol.MANMODE);
-        }
-    }//GEN-LAST:event_AmbMenuActionPerformed
 
     private void FileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_FileMenuActionPerformed
         // TODO add your handling code here:
@@ -228,8 +458,9 @@ public class WallaceLED extends javax.swing.JFrame {
             ledcontrol.setColor(pvsavedcolor);
         } else {
             ledcontrol.setMode(pvsavedmode);
-            AmbMenu.setSelected(true);
+            
         }
+        setModeSelected(pvsavedmode);
         // close dialog
         colordialog.setVisible(false);
     }//GEN-LAST:event_colorcancelbtnActionPerformed
@@ -240,7 +471,7 @@ public class WallaceLED extends javax.swing.JFrame {
         Color color = colorpicker.getColor();
         ledcontrol.setColor(color);
         colordialog.setVisible(false);
-        AmbMenu.setSelected(false);
+        setModeSelected(0x2);
     }//GEN-LAST:event_colorapplybtnActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
@@ -256,7 +487,7 @@ public class WallaceLED extends javax.swing.JFrame {
         public void propertyChange(PropertyChangeEvent evt) {
             Color color = colorpicker.getColor();
             ledcontrol.setColor(color);
-            AmbMenu.setSelected(false);
+            setModeSelected(0x2);
         }  
     };
     private void manprevcbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manprevcbActionPerformed
@@ -267,6 +498,37 @@ public class WallaceLED extends javax.swing.JFrame {
             colorpicker.getPreviewPanel().removePropertyChangeListener(manprevlist);
         }
     }//GEN-LAST:event_manprevcbActionPerformed
+
+    private void fadeintsettingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fadeintsettingActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_fadeintsettingActionPerformed
+
+    private void faderatesettingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_faderatesettingActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_faderatesettingActionPerformed
+
+    private void fadesettingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fadesettingActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_fadesettingActionPerformed
+
+    private void cfadesettingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cfadesettingActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cfadesettingActionPerformed
+
+    private void settingsbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsbtnActionPerformed
+        settingsdialog.setVisible(true);
+    }//GEN-LAST:event_settingsbtnActionPerformed
+
+    private void cansettingbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cansettingbtnActionPerformed
+        settingsdialog.setVisible(false);
+    }//GEN-LAST:event_cansettingbtnActionPerformed
+
+    private void applysetbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applysetbtnActionPerformed
+        // TODO add your handling code here:
+        if (saveSettings()){
+            settingsdialog.setVisible(false);
+        }
+    }//GEN-LAST:event_applysetbtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -312,24 +574,78 @@ public class WallaceLED extends javax.swing.JFrame {
                 Image icon = Toolkit.getDefaultToolkit().getImage(WallaceLED.class.getResource("img/RGBsmall.png"));
                 view.setIconImage(icon);
                 view.setVisible(true);
+                
             }
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBoxMenuItem AmbMenu;
     private javax.swing.JPanel ColorPanel;
     private javax.swing.JMenu FileMenu;
+    private javax.swing.JMenu ModeMenu;
     private javax.swing.JMenu PortMenu;
     private javax.swing.JMenuItem QuitMenu;
     private javax.swing.JMenu SettingMenu;
+    private javax.swing.JRadioButtonMenuItem ambmoderb;
+    private javax.swing.JPanel ambsettings;
+    private javax.swing.JButton applysetbtn;
+    private javax.swing.JButton cansettingbtn;
+    private javax.swing.JTextField captsetting;
+    private javax.swing.JCheckBox cfadesetting;
     private javax.swing.JButton colorapplybtn;
     private javax.swing.JButton colorcancelbtn;
     private javax.swing.JDialog colordialog;
     private javax.swing.JColorChooser colorpicker;
+    private javax.swing.JTextField fadeintsetting;
+    private javax.swing.JTextField faderatesetting;
+    private javax.swing.JCheckBox fadesetting;
+    private javax.swing.JLabel intsetting;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JRadioButtonMenuItem manmoderb;
     private javax.swing.JCheckBox manprevcb;
+    private javax.swing.JTextField pixelsetting;
+    private javax.swing.JRadioButtonMenuItem seqmoderb;
+    private javax.swing.JPanel seqsettings;
+    private javax.swing.JMenuItem settingsbtn;
+    private javax.swing.JDialog settingsdialog;
+    private javax.swing.JTabbedPane settingspane;
     // End of variables declaration//GEN-END:variables
-    
+    private boolean saveSettings(){
+        int[] intset = new int[]{Integer.valueOf(captsetting.getText()), Integer.valueOf(pixelsetting.getText()), Integer.valueOf(fadeintsetting.getText()), Integer.valueOf(faderatesetting.getText())};
+        boolean fadeon = fadesetting.isSelected();
+        boolean cfade = cfadesetting.isSelected();
+        // validate
+        String result = "OK";
+        if (intset[0]<10 || intset[0]>20000){
+            result="Capture rate must be between 10 and 20000";
+        } else if (intset[1]<1){
+            result="Pixel analysis must be a positive integer, recommended value is 5";
+        } else if (intset[2]<1){
+            result="Seqence interval must be at least a second";
+        } else if (intset[3]<1 || intset[3]>50){
+            result="Fade rate must be between 10 and 50"; 
+        }
+        if (!result.equals("OK")){
+            errorDialog(new String[]{"Error", result});
+            return false;
+        } else {
+            // set in application
+            ledcontrol.applySettings(intset, fadeon, cfade);
+            // write to settings file TBC
+            return true;
+        }
+    }
+
     public final void errorDialog(String[] lines){
         JOptionPane.showMessageDialog(this, lines);
     }
@@ -363,7 +679,49 @@ public class WallaceLED extends javax.swing.JFrame {
             i++;
         }
     }
-    
+    private ButtonGroup modegroup;
+    ActionListener mclistener = new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+            JRadioButtonMenuItem btn = ((JRadioButtonMenuItem)e.getSource());
+            String port = btn.getText();
+            switch (port){
+                case("Ambient Mode"):
+                    ledcontrol.setMode(ledcontrol.AMBMODE);
+                break;
+                case("Sequence Mode"):
+                    ledcontrol.setMode(ledcontrol.SEQMODE);
+                break;
+                case("Manual Mode"):
+                    ledcontrol.setMode(ledcontrol.MANMODE);
+            }
+            modegroup.setSelected(btn.getModel(), rootPaneCheckingEnabled);
+      }
+    };
+    private void initModeButtons(){
+          modegroup = new ButtonGroup();
+          ambmoderb.addActionListener(mclistener);
+          modegroup.add(ambmoderb);
+          seqmoderb.addActionListener(mclistener);
+          modegroup.add(seqmoderb);
+          manmoderb.addActionListener(mclistener);
+          modegroup.add(manmoderb);
+          modegroup.setSelected(ambmoderb.getModel(), rootPaneCheckingEnabled);
+    }
+    private void setModeSelected(int mode){
+        switch(mode){
+            case (1):
+                modegroup.setSelected(ambmoderb.getModel(), rootPaneCheckingEnabled);
+            break;
+            case (2):
+                modegroup.setSelected(manmoderb.getModel(), rootPaneCheckingEnabled);
+            break;
+            case (3):
+                modegroup.setSelected(seqmoderb.getModel(), rootPaneCheckingEnabled);
+            break;
+        }
+        
+    }
     
     /**
      *
