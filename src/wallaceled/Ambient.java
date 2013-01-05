@@ -82,7 +82,7 @@ public class Ambient {
             }
             int aX = x / skipValue;
             int aY = y / skipValue;
-            r = r / (aX * aY); //average red 
+            r = r / (aX * aY); //average red
             g = g / (aX * aY); //average green
             b = b / (aX * aY); //average blue
 
