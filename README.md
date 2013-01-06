@@ -10,26 +10,27 @@ GENERAL FEATURES:
 
     - Switch Serial/COM ports
     - Minimize to the system tray
-    - Toggle lights on and off (included in system tray)
-    - (soon) Choose mode from the system tray
+    - Toggle lights on and off*
+    - Adjust brightness
+    - Select mode*
+    
+    *Available from the system tray icon
 
 MODES:
 --------------
 
     - AMBIENT LIGHTING
-        - (coming very soon) Adjust brightness
         - Change screen-shot capture rate
         - Change number of pixels between each analysis
         - (coming soon) scan the edge of the screen only
 
     - MANUAL COLOR
-        - (coming very soon) Adjust brightness
         - Keep the currently showing color
         - Pick a color from swings great color picker.
         - Preview colors in the color palette, cancel button will return to the color show before the preview.
     
     - PRESET SEQUENCES
-        - (coming very soon) Choose from a list of preset sequences.
+        - Choose from a list of preset sequences.
         - Adjust the preset sequences interval and fade settings.
     
     - CUSTOM SEQUENCES (a long way away)
@@ -41,6 +42,6 @@ MODES:
 KNOWN ISSUES:
 --------------
 
-        - Stack overflow bug during sequences
+        - Help to improve the application by submitting issues
 
 

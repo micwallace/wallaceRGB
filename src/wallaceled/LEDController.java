@@ -21,11 +21,13 @@ public class LEDController {
     public final int SEQMODE = 3;
     private int curmode = AMBMODE; // current mode
     private Ambient amb; // ambient robot/controller
-    private Looper seq; // sequence controller
+    private Sequencer seq; // sequence controller
     public SerialConnect serial; // serial connection object
     JPanel colorpanel; // GUI color panel
-
+    private float brightness;
+            
     public LEDController(JPanel cpanel) {
+        brightness = new Float(1); // 0.1 - 1; 1==100%
         // color panel; passed from gui
         colorpanel = cpanel;
         // setup serial object
@@ -33,7 +35,7 @@ public class LEDController {
         // setup robot
         amb = new Ambient(LEDController.this);
         // setup sequencer
-        seq = new Looper(LEDController.this);
+        seq = new Sequencer(LEDController.this);
     }
 
     public void andGodSaidLetThereBeLight() {
@@ -50,29 +52,45 @@ public class LEDController {
         seq.Crossfade(cfade);
         seq.setInterval(intset[2]*1000); // change to seconds
         seq.setFadeRate(intset[3]);
+        seq.setFadeSpeed(intset[4]);
     }
     
     public void lightsOff() {
-        if (curmode == this.MANMODE) {
-            powerOffLights();
-        } else {
-            amb.stopAmb();
-            while (amb.isrunning) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null, ex);
+        switch(curmode){
+            case AMBMODE:
+                amb.stopAmb();
+                while (amb.isrunning) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
-            }
-            powerOffLights();
+                break;
+            case SEQMODE:
+                seq.stopSequence();
+                while (seq.faderun) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                
         }
+        powerOffLights();
     }
 
     public void lightsOn() {
-        if (curmode == this.MANMODE) {
-            setColor(currentcolor);
-        } else {
-            amb.startAmb();
+        switch (curmode) {
+            case MANMODE:
+                setColor(currentcolor);
+                break;
+            case AMBMODE:
+                amb.startAmb();
+                break;
+            case SEQMODE:
+                seq.startSequence();
         }
     }
 
@@ -86,9 +104,32 @@ public class LEDController {
             Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    public void setBrightness(int bright){
+        brightness=Float.valueOf(Float.valueOf(bright)/10);
+        if (getMode()==MANMODE){
+            if (currentcolor==null){ // use the color panel to set the manual color if null
+                currentcolor = colorpanel.getBackground();
+            }
+            setColor(new int[]{Math.round(currentcolor.getRed()*brightness), Math.round(currentcolor.getGreen()*brightness), Math.round(currentcolor.getBlue()*brightness)});
+        } else if (getMode()==SEQMODE){
+            if (!seq.doingfade && seq.curseqcolor!=null){
+                setColor(seq.curseqcolor);
+            }
+        }
+        System.out.println(brightness);
+    }
 
     public int getMode() {
         return curmode;
+    }
+    
+    public String[] getSequences(){
+        return seq.getSequences();
+    }
+    
+    public void setSequence(String name){
+        seq.setSequence(name);
     }
 
     public void setMode(int mode) {
@@ -96,6 +137,13 @@ public class LEDController {
             case AMBMODE:
                 if (curmode == SEQMODE) {
                     seq.stopSequence();
+                    while (seq.faderun) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
                 }
                 amb.startAmb();
                 curmode = AMBMODE;
@@ -127,8 +175,10 @@ public class LEDController {
                 } else {
                     seq.stopSequence();
                 }
+                currentcolor = colorpanel.getBackground(); // set the first manual color from the currently displayed
                 curmode = MANMODE;
         }
+        // setBrightness(10); This is set from the ui on mode change
     }
     // manual set color
     private Color currentcolor;
@@ -141,6 +191,13 @@ public class LEDController {
     }
     // set color used by ambient and sequence engine
     public void setColor(int[] rgb) {
+        // apply brightness
+        int i = 0;
+        while(i<3){
+            rgb[i]=Math.round(rgb[i]*brightness);
+            i++;
+        }
+        //System.out.println(brightness);
         // pass to serial object
         try {
             serial.writedata((byte) (255));
