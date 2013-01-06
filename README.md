@@ -6,12 +6,15 @@ This is a swing based java utility to control rgb lights via serial communicatio
 Inspired by this project: http://www.makeuseof.com/tag/build-your-own-dynamic-ambient-lighting-for-a-media-center/ , wallaceRGB was made to be a permanent, flexible utility for controlling LED RGB lights.
 
 GENERAL FEATURES:
+--------------
+
     - Switch Serial/COM ports
     - Minimize to the system tray
     - Toggle lights on and off (included in system tray)
     - (soon) Choose mode from the system tray
 
 MODES:
+--------------
 
     - AMBIENT LIGHTING
         - (coming very soon) Adjust brightness
@@ -34,7 +37,10 @@ MODES:
         - set individual intervals
         - set individual fade
 
-KNOWN ISSUES
-    - Stack overflow bug during sequences
+
+KNOWN ISSUES:
+--------------
+
+        - Stack overflow bug during sequences
 
 
