@@ -124,8 +124,8 @@ public class Sequencer {
     private boolean stopfade = false;
     public boolean faderun = false;
     public boolean doingfade = false;
-    private int[] targetcolor;
-    private int[] curcolor;
+    private float[] targetcolor;
+    private float[] curcolor;
     private int faderate = 5;
     private int fadeint = 10; // ms between each shade
     private boolean crossfade = true;
@@ -155,8 +155,8 @@ public class Sequencer {
     }
 
     public void setFadeColor(Color color) {
-        targetcolor = new int[]{color.getRed(), color.getGreen(), color.getBlue()};
-        curseqcolor = targetcolor;
+        targetcolor = new float[]{color.getRed(), color.getGreen(), color.getBlue()};
+        curseqcolor = new int[]{color.getRed(), color.getGreen(), color.getBlue()};
         dimcomplete = false;
     }
 
@@ -173,22 +173,25 @@ public class Sequencer {
     }
 
     public class fadeT extends Thread {
-
+        private float[] target;
+        private float[] curint;
         @Override
         public void run() {
             faderun = true;
+            curint = new float[]{1,1,1};
             while (faderun == true) {
                 if (initializing) { // waiting for first value
                     if (targetcolor != null) { // set first value as current, set the color; initialization complete 
                         setColor(targetcolor);
                         curcolor = targetcolor;
+                        this.target = new float[]{0,0,0}; // so we know when it has been changed and can recalculate intervals
                         initializing = false;
                     }
                 } else { //System.out.println("test3"); 
                     if (Arrays.equals(targetcolor, curcolor)) {
                         try {
-                            // only perform fade when colors are not equal, otherwise sleep for 500
-                            Thread.sleep(500);
+                            // only perform fade when colors are not equal, otherwise sleep for 10
+                            Thread.sleep(10);
                         } catch (InterruptedException ex) {
                             Logger.getLogger(Sequencer.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -224,18 +227,31 @@ public class Sequencer {
                     curcolor[i] = (curcolor[i] - faderate < 0 ? 0 : curcolor[i] - faderate);
                     i++;
                 }
-                dimcomplete = Arrays.equals(curcolor, new int[]{0, 0, 0});
+                dimcomplete = Arrays.equals(curcolor, new float[]{0, 0, 0});
             } else {
+                
+                i=0;
+                // apply interval to each channel
                 while (i < 3) {
+                    // new taget color? work out new time relative intervals
+                if (target[i] != targetcolor[i]){
+                        float diff = targetcolor[i]-curcolor[i];
+                        diff = (diff < 0 ? -diff : diff);
+                        curint[i] =  (diff/100)*faderate;
+                        System.out.println("test");
+                        target[i] = targetcolor[i];
+                }
+                
                     // work out increments for each channel
-                    curcolor[i] = (curcolor[i] == targetcolor[i] ? curcolor[i]
-                            : (curcolor[i] < targetcolor[i] ? (curcolor[i] + faderate <= targetcolor[i] ? curcolor[i] + faderate
-                            : targetcolor[i]) : (curcolor[i] - faderate >= targetcolor[i]
-                            ? curcolor[i] - faderate : targetcolor[i])));
+                    curcolor[i] = (Math.round(curcolor[i]) == Math.round(targetcolor[i]) ? targetcolor[i]
+                            : (curcolor[i] < targetcolor[i] ? (curcolor[i] + curint[i] <= targetcolor[i] ? curcolor[i] + curint[i]
+                            : targetcolor[i]) : (curcolor[i] - curint[i] >= targetcolor[i]
+                            ? curcolor[i] - curint[i] : targetcolor[i])));
                     i++;
                 }
             }
             // set fade increment color
+            System.out.println(curint[0]+"-"+curint[1]+"-"+curint[2]);
             //System.out.println(curcolor[0]+"-"+curcolor[1]+"-"+curcolor[2]+"-");
             setColor(curcolor);
         }
@@ -243,12 +259,12 @@ public class Sequencer {
     private void setColor(Color color) {
         // pass to controller object
         curseqcolor = new int[]{color.getRed(), color.getGreen(), color.getBlue()};
-        ledcontrol.setColor(curseqcolor);
+        ledcontrol.setColor(new int[]{color.getRed(), color.getGreen(), color.getBlue()});
         // ledcontrol.setFadeColor(rgb); use fader
     }
 
-    private void setColor(int[] rgb) {
-        ledcontrol.setColor(rgb);
+    private void setColor(float[] rgb) {
+        ledcontrol.setColor(new int[]{Math.round(rgb[0]),Math.round(rgb[1]),Math.round(rgb[2])});
     }
     
     private void loadPresetSequences(){

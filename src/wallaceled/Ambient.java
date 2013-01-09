@@ -87,7 +87,7 @@ public class Ambient {
             b = b / (aX * aY); //average blue
 
             //System.out.println(r+","+g+","+b);
-
+            /*
             // filter values to increase saturation
             float maxColorInt;
             float minColorInt;
@@ -109,7 +109,6 @@ public class Ambient {
                     b = maxColorInt + 20;
                 }
             }
-
             //minimise smallest
             minColorInt = Math.min(Math.min(r, g), b);
             if (minColorInt == r) {
@@ -127,7 +126,7 @@ public class Ambient {
                 if (minColorInt > 20) {
                     b = minColorInt - 20;
                 }
-            }
+            }*/
             // set the color
             setColor(new int[]{Math.round(r), Math.round(g), Math.round(b)});
             // stop if interrupted
