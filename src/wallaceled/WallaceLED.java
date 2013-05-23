@@ -8,7 +8,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.Thread.UncaughtExceptionHandler;
+import java.io.IOException;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -27,6 +29,14 @@ public class WallaceLED extends javax.swing.JFrame {
     LEDController ledcontrol;
 
     public WallaceLED() {
+        Handler handler;
+        try {
+            handler = new FileHandler(WallaceLED.class.getProtectionDomain().getCodeSource().getLocation().getPath()+"\\WallaceRGB.log", 0, 1);
+            Logger.getLogger("").addHandler(handler);
+        } catch (IOException | SecurityException ex) {
+            Logger.getLogger(WallaceLED.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         HideToSystemTray();
         initComponents();
         setLocationRelativeTo(getRootPane());
@@ -156,7 +166,7 @@ public class WallaceLED extends javax.swing.JFrame {
                     .addComponent(manprevcb)))
         );
 
-        settingsdialog.setMinimumSize(new java.awt.Dimension(325, 275));
+        settingsdialog.setMinimumSize(new java.awt.Dimension(350, 275));
 
         jLabel1.setText("Capture Rate:");
 
@@ -212,7 +222,7 @@ public class WallaceLED extends javax.swing.JFrame {
 
         intsetting.setText("Interval:");
 
-        fadeintsetting.setText("5");
+        fadeintsetting.setText("10");
         fadeintsetting.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fadeintsettingActionPerformed(evt);
@@ -223,7 +233,7 @@ public class WallaceLED extends javax.swing.JFrame {
 
         jLabel7.setText("Rate:");
 
-        faderatesetting.setText("5");
+        faderatesetting.setText("2");
         faderatesetting.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 faderatesettingActionPerformed(evt);
@@ -257,7 +267,7 @@ public class WallaceLED extends javax.swing.JFrame {
 
         jLabel12.setText("Speed:");
 
-        fadespeedsetting.setText("5");
+        fadespeedsetting.setText("50");
         fadespeedsetting.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fadespeedsettingActionPerformed(evt);
@@ -881,7 +891,7 @@ public class WallaceLED extends javax.swing.JFrame {
      *
      * @author Mohammad Faisal ermohammadfaisal.blogspot.com
      * facebook.com/m.faisal6621
-     *
+     *  thanks Mohammad!
      */
     JMenuItem powertraybtn;
     JRadioButtonMenuItem ambtrayrb;

@@ -31,7 +31,7 @@ public class Sequencer {
         // set the default sequence
         currentseq = "RGB";
         // set default interval
-        colorint = 5000;
+        colorint = 10000;
         // setup the seqence timer
         timer = new Timer();
     }
@@ -56,9 +56,8 @@ public class Sequencer {
 
     public void stopSequence() {
         stopSeqTask();
-        if (faderun) {
-            stopFader();
-        }
+        stopFader();
+        activeseq = null;
     }
     
     private void startSeqTask(){
@@ -68,8 +67,8 @@ public class Sequencer {
     
     private boolean stopSeqTask(){
         if (seqrun){
-            seqrun = false;
             seqtask.cancel();
+            seqrun = false;
             return true;
         }
         return false;
@@ -120,14 +119,13 @@ public class Sequencer {
         }
     }
     // FADE THREAD AND FUNCTIONS
-    boolean initializing = true;
     private boolean stopfade = false;
     public boolean faderun = false;
     public boolean doingfade = false;
     private float[] targetcolor;
     private float[] curcolor;
-    private int faderate = 5;
-    private int fadeint = 10; // ms between each shade
+    private int faderate = 2; // fade increment
+    private int fadeint = 50; // ms between each shade
     private boolean crossfade = true;
     private boolean enablefade = true;
     private boolean dimcomplete;
@@ -138,6 +136,8 @@ public class Sequencer {
 
     public void startFader() {
         if (!faderun) {
+            curcolor = null;
+            curseqcolor = null;
             fadeT fader = new fadeT();
             fader.start();
         }
@@ -175,6 +175,7 @@ public class Sequencer {
     public class fadeT extends Thread {
         private float[] target;
         private float[] curint;
+        boolean initializing = true;
         @Override
         public void run() {
             faderun = true;
@@ -206,6 +207,7 @@ public class Sequencer {
                 if (stopfade == true && Arrays.equals(targetcolor, curcolor)) {
                     stopfade = false; // fader has stopped
                     faderun = false;
+                    this.interrupt();
                 } else {
                     try {
                         Thread.sleep(fadeint); // FADE SPEED
@@ -229,11 +231,10 @@ public class Sequencer {
                 }
                 dimcomplete = Arrays.equals(curcolor, new float[]{0, 0, 0});
             } else {
-                
                 i=0;
                 // apply interval to each channel
                 while (i < 3) {
-                    // new taget color? work out new time relative intervals
+                // new taget color? work out new relative intervals
                 if (target[i] != targetcolor[i]){
                         float diff = targetcolor[i]-curcolor[i];
                         diff = (diff < 0 ? -diff : diff);
@@ -251,11 +252,12 @@ public class Sequencer {
                 }
             }
             // set fade increment color
-            System.out.println(curint[0]+"-"+curint[1]+"-"+curint[2]);
+            //System.out.println(curint[0]+"-"+curint[1]+"-"+curint[2]);
             //System.out.println(curcolor[0]+"-"+curcolor[1]+"-"+curcolor[2]+"-");
             setColor(curcolor);
         }
     }
+    
     private void setColor(Color color) {
         // pass to controller object
         curseqcolor = new int[]{color.getRed(), color.getGreen(), color.getBlue()};
