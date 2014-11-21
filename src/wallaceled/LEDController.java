@@ -39,6 +39,11 @@ public class LEDController {
     }
 
     public void andGodSaidLetThereBeLight() {
+        try {
+            Thread.sleep(500); // gives time for serial to connect
+        } catch (InterruptedException ex) {
+            Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null, ex);
+        }
         // start in ambience mode
         amb.startAmb();
     }
@@ -47,6 +52,9 @@ public class LEDController {
         // ambience stuff
         amb.setCaptureRate(intset[0]);
         amb.setPixelSkip(intset[1]);
+        amb.setThreshold(intset[5]);
+        amb.setFadeRate(intset[6]);
+        amb.setFadeSpeed(intset[7]);
         // sequnce stuff
         seq.enableFade(fadeon);
         seq.Crossfade(cfade);
@@ -107,16 +115,10 @@ public class LEDController {
     
     public void setBrightness(int bright){
         brightness=Float.valueOf(Float.valueOf(bright)/10);
-        if (getMode()==MANMODE){
-            if (currentcolor==null){ // use the color panel to set the manual color if null
+        if (currentcolor==null){ // use the color panel to set the manual color if null
                 currentcolor = colorpanel.getBackground();
-            }
-            setColor(new int[]{Math.round(currentcolor.getRed()*brightness), Math.round(currentcolor.getGreen()*brightness), Math.round(currentcolor.getBlue()*brightness)});
-        } else if (getMode()==SEQMODE){
-            if (!seq.doingfade && seq.curseqcolor!=null){
-                setColor(seq.curseqcolor);
-            }
         }
+        setLED(new int[]{Math.round(currentcolor.getRed()), Math.round(currentcolor.getGreen()), Math.round(currentcolor.getBlue())});
         System.out.println(brightness);
     }
 
@@ -189,8 +191,12 @@ public class LEDController {
         currentcolor = color;
         setColor(new int[]{color.getRed(), color.getGreen(), color.getBlue()});
     }
+    public void setColor(int[] rgb){
+        setLED(rgb);
+        currentcolor = new Color(rgb[0], rgb[1], rgb[2]);
+    }
     // set color used by ambient and sequence engine
-    public void setColor(int[] rgb) {
+    public void setLED(int[] rgb) {
         // apply brightness
         int i = 0;
         while(i<3){

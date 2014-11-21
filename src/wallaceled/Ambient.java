@@ -6,6 +6,7 @@ package wallaceled;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,7 +22,10 @@ public class Ambient {
     boolean isrunning = false;
     LEDController ledcontrol;
     int skipValue = 10; // skip this many pixels when reading screenshot
-    int captRate = 50; // ms to wait after each capture
+    int captRate = 500; // ms to wait after each capture
+    int threshold = 60;
+    Looper looper;
+    Fader fader;
 
     public Ambient(LEDController ledcon) {
         ledcontrol = ledcon;
@@ -35,12 +39,16 @@ public class Ambient {
     public void startAmb() {
         interrupt = false;
         isrunning = true;
-        Looper looper = new Looper();
+        looper = new Looper();
         looper.start();
+        fader = new Fader();
+        fader.start();
     }
 
     public void stopAmb() {
         interrupt = true;
+        fader.interrupt();
+        looper.interrupt();
     }
 
     public void setPixelSkip(int pixels) {
@@ -50,21 +58,35 @@ public class Ambient {
     public void setCaptureRate(int captrate) {
         captRate = captrate;
     }
+    
+    public void setThreshold(int thresh) {
+        threshold = thresh;
+    }
+    
+    public void setFadeRate(int rate){
+       faderate = rate; 
+    }
+    
+    public void setFadeSpeed(int speed){
+        fadeint = speed;
+    }
 
     public class Looper extends Thread {
         // captures and averages the rgb values on a timeout unless interupted
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         int x = toolkit.getScreenSize().width; //possibly displayWidth
         int y = toolkit.getScreenSize().height; //possible displayHeight instead
+        BufferedImage screenshot;
         @Override
         public void run() {
             int pixel; //ARGB variable with 32 int bytes where sets of 8 bytes are: Alpha, Red, Green, Blue
             float r = 0;
             float g = 0;
             float b = 0;
+            targetcolor = new float[]{1,1,1};
             while (!interrupt) {
                 //get screenshot into object "screenshot" of class BufferedImage
-                BufferedImage screenshot = robby.createScreenCapture(new Rectangle(new Dimension(x, y)));
+                screenshot = robby.createScreenCapture(new Rectangle(new Dimension(x, y)));
                 // loop through pixels at interval
                 int i = 0;
                 int j = 0;
@@ -83,6 +105,8 @@ public class Ambient {
                 b = b / (aX * aY); //average blue
                 //System.out.println(r+","+g+","+b);
                 // filter values to increase saturation
+                int colorchange = Math.round((Math.abs(r-targetcolor[0]) + Math.abs(g-targetcolor[1]) + Math.abs(b-targetcolor[2]))/3);
+                if (colorchange>threshold){
                 float maxColorInt;
                 float minColorInt;
                 maxColorInt = Math.max(Math.max(r, g), b);
@@ -120,8 +144,10 @@ public class Ambient {
                         b = minColorInt - 20;
                     }
                 }
-                // set the color
-                setColor(new int[]{Math.round(r), Math.round(g), Math.round(b)});
+                // set the color to fade to
+                    //setColor(new int[]{Math.round(r), Math.round(g), Math.round(b)});
+                    setFadeColor(new Color(Math.round(r),Math.round(g),Math.round(b)));
+                }
                 // sleep
                 try {
                     // sleep and repeat
@@ -136,7 +162,88 @@ public class Ambient {
             isrunning = false;
         }
     }
+    // FADER
+    private float[] targetcolor;
+    private float[] curcolor;
+    public int[] curseqcolor;
+    public boolean doingfade = false;
+    private int faderate = 5; // fade increment
+    private int fadeint = 10; // ms between each shade
+    private class Fader extends Thread {
+       private float[] target;
+        private float[] curint;
+        boolean initializing = true;
+        @Override
+        public void run() {
+            curint = new float[]{1,1,1};
+            while (isrunning) {
+                if (initializing) { // waiting for first value
+                    if (targetcolor != null) { // set first value as current, set the color; initialization complete 
+                        setColor(targetcolor);
+                        curcolor = targetcolor;
+                        this.target = new float[]{0,0,0}; // so we know when it has been changed and can recalculate intervals
+                        initializing = false;
+                    }
+                } else { //System.out.println("test3"); 
+                    if (Arrays.equals(targetcolor, curcolor)) {
+                        try {
+                            // only perform fade when colors are not equal, otherwise sleep for 10
+                            Thread.sleep(10);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(Sequencer.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        doingfade=false;
+                    } else {
+                        doFadeStep();
+                        doingfade=true;
+                    }
+                    //System.out.println(curcolor[0] + "-" + setcolor[0]+" " + curcolor[1] + "-" + setcolor[1] + " " + curcolor[2] + "-"+ setcolor[2]); 
+                }
+                    try {
+                        Thread.sleep(fadeint); // FADE SPEED
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null,
+                                ex);
+                    }
+            }
+        }
 
+        private void doFadeStep() {
+            int i = 0;
+            // are we diming?
+                i=0;
+                // apply interval to each channel
+                while (i < 3) {
+                // new taget color? work out new relative intervals
+                if (target[i] != targetcolor[i]){
+                        float diff = targetcolor[i]-curcolor[i];
+                        diff = (diff < 0 ? -diff : diff);
+                        curint[i] =  (diff/100)*faderate;
+                        //System.out.println("test");
+                        target[i] = targetcolor[i];
+                }
+                
+                    // work out increments for each channel
+                    curcolor[i] = (Math.round(curcolor[i]) == Math.round(targetcolor[i]) ? targetcolor[i]
+                            : (curcolor[i] < targetcolor[i] ? (curcolor[i] + curint[i] <= targetcolor[i] ? curcolor[i] + curint[i]
+                            : targetcolor[i]) : (curcolor[i] - curint[i] >= targetcolor[i]
+                            ? curcolor[i] - curint[i] : targetcolor[i])));
+                    i++;
+            }
+            // set fade increment color
+            //System.out.println(curint[0]+"-"+curint[1]+"-"+curint[2]);
+            //System.out.println(curcolor[0]+"-"+curcolor[1]+"-"+curcolor[2]+"-");
+            setColor(curcolor);
+        }
+    }
+
+    private void setFadeColor(Color color) {
+        targetcolor = new float[]{color.getRed(), color.getGreen(), color.getBlue()};
+        curseqcolor = new int[]{color.getRed(), color.getGreen(), color.getBlue()};
+    }
+    private void setColor(float[] rgb) {
+        ledcontrol.setColor(new int[]{Math.round(rgb[0]),Math.round(rgb[1]),Math.round(rgb[2])});
+    }
     private void setColor(int[] rgb) {
         // pass to controller object
         ledcontrol.setColor(rgb);

@@ -23,6 +23,8 @@ public class Sequencer {
     private int colorint;
     private seqT seqtask;
     public int[] curseqcolor;
+    fadeT fader;
+
     public Sequencer(LEDController ledcon) {
         ledcontrol = ledcon;
         // create the sequence arraylist and put presets
@@ -59,14 +61,14 @@ public class Sequencer {
         stopFader();
         activeseq = null;
     }
-    
-    private void startSeqTask(){
+
+    private void startSeqTask() {
         seqtask = new seqT();
         timer.scheduleAtFixedRate(seqtask, 0, colorint);
     }
-    
-    private boolean stopSeqTask(){
-        if (seqrun){
+
+    private boolean stopSeqTask() {
+        if (seqrun) {
             seqtask.cancel();
             seqrun = false;
             return true;
@@ -79,13 +81,13 @@ public class Sequencer {
             boolean taskstopped = stopSeqTask();
             activeseq = null;
             currentseq = name;
-            if (taskstopped){
+            if (taskstopped) {
                 startSeqTask();
             }
         }
     }
-    
-    public String[] getSequences(){
+
+    public String[] getSequences() {
         Object[] tempobj = sequences.keySet().toArray();
         String[] seqnames = Arrays.copyOf(tempobj, tempobj.length, String[].class);
         return seqnames;
@@ -132,13 +134,14 @@ public class Sequencer {
 
     public void stopFader() {
         stopfade = true;
+        fader.interrupt();
     }
 
     public void startFader() {
         if (!faderun) {
             curcolor = null;
             curseqcolor = null;
-            fadeT fader = new fadeT();
+            fader = new fadeT();
             fader.start();
         }
     }
@@ -163,8 +166,8 @@ public class Sequencer {
     public void setFadeRate(int rate) {
         faderate = rate;
     }
-    
-    public void setFadeSpeed(int speed){
+
+    public void setFadeSpeed(int speed) {
         fadeint = speed;
     }
 
@@ -173,19 +176,21 @@ public class Sequencer {
     }
 
     public class fadeT extends Thread {
+
         private float[] target;
         private float[] curint;
         boolean initializing = true;
+
         @Override
         public void run() {
             faderun = true;
-            curint = new float[]{1,1,1};
+            curint = new float[]{1, 1, 1};
             while (faderun == true) {
                 if (initializing) { // waiting for first value
                     if (targetcolor != null) { // set first value as current, set the color; initialization complete 
                         setColor(targetcolor);
                         curcolor = targetcolor;
-                        this.target = new float[]{0,0,0}; // so we know when it has been changed and can recalculate intervals
+                        this.target = new float[]{0, 0, 0}; // so we know when it has been changed and can recalculate intervals
                         initializing = false;
                     }
                 } else { //System.out.println("test3"); 
@@ -196,10 +201,10 @@ public class Sequencer {
                         } catch (InterruptedException ex) {
                             Logger.getLogger(Sequencer.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        doingfade=false;
+                        doingfade = false;
                     } else {
                         doFadeStep();
-                        doingfade=true;
+                        doingfade = true;
                     }
                     //System.out.println(curcolor[0] + "-" + setcolor[0]+" " + curcolor[1] + "-" + setcolor[1] + " " + curcolor[2] + "-"+ setcolor[2]); 
                 }
@@ -212,8 +217,7 @@ public class Sequencer {
                     try {
                         Thread.sleep(fadeint); // FADE SPEED
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null,
-                                ex);
+                        Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     //run();
                 }
@@ -231,18 +235,18 @@ public class Sequencer {
                 }
                 dimcomplete = Arrays.equals(curcolor, new float[]{0, 0, 0});
             } else {
-                i=0;
+                i = 0;
                 // apply interval to each channel
                 while (i < 3) {
-                // new taget color? work out new relative intervals
-                if (target[i] != targetcolor[i]){
-                        float diff = targetcolor[i]-curcolor[i];
+                    // new taget color? work out new relative intervals
+                    if (target[i] != targetcolor[i]) {
+                        float diff = targetcolor[i] - curcolor[i];
                         diff = (diff < 0 ? -diff : diff);
-                        curint[i] =  (diff/100)*faderate;
+                        curint[i] = (diff / 100) * faderate;
                         System.out.println("test");
                         target[i] = targetcolor[i];
-                }
-                
+                    }
+
                     // work out increments for each channel
                     curcolor[i] = (Math.round(curcolor[i]) == Math.round(targetcolor[i]) ? targetcolor[i]
                             : (curcolor[i] < targetcolor[i] ? (curcolor[i] + curint[i] <= targetcolor[i] ? curcolor[i] + curint[i]
@@ -257,7 +261,7 @@ public class Sequencer {
             setColor(curcolor);
         }
     }
-    
+
     private void setColor(Color color) {
         // pass to controller object
         curseqcolor = new int[]{color.getRed(), color.getGreen(), color.getBlue()};
@@ -266,10 +270,10 @@ public class Sequencer {
     }
 
     private void setColor(float[] rgb) {
-        ledcontrol.setColor(new int[]{Math.round(rgb[0]),Math.round(rgb[1]),Math.round(rgb[2])});
+        ledcontrol.setColor(new int[]{Math.round(rgb[0]), Math.round(rgb[1]), Math.round(rgb[2])});
     }
-    
-    private void loadPresetSequences(){
+
+    private void loadPresetSequences() {
         ArrayList temploop = new ArrayList<>(Arrays.asList(Color.CYAN, Color.MAGENTA, Color.YELLOW));
         sequences.put("CMY-NO-K", temploop);
         temploop = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN, Color.BLUE));
