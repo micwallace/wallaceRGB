@@ -242,10 +242,10 @@ public class Ambient {
         curseqcolor = new int[]{color.getRed(), color.getGreen(), color.getBlue()};
     }
     private void setColor(float[] rgb) {
-        ledcontrol.setColor(new int[]{Math.round(rgb[0]),Math.round(rgb[1]),Math.round(rgb[2])});
+        ledcontrol.setAmbColor(new int[]{Math.round(rgb[0]),Math.round(rgb[1]),Math.round(rgb[2])});
     }
     private void setColor(int[] rgb) {
         // pass to controller object
-        ledcontrol.setColor(rgb);
+        ledcontrol.setAmbColor(rgb);
     }
 }

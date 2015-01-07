@@ -265,12 +265,12 @@ public class Sequencer {
     private void setColor(Color color) {
         // pass to controller object
         curseqcolor = new int[]{color.getRed(), color.getGreen(), color.getBlue()};
-        ledcontrol.setColor(new int[]{color.getRed(), color.getGreen(), color.getBlue()});
+        ledcontrol.setSeqColor(new int[]{color.getRed(), color.getGreen(), color.getBlue()});
         // ledcontrol.setFadeColor(rgb); use fader
     }
 
     private void setColor(float[] rgb) {
-        ledcontrol.setColor(new int[]{Math.round(rgb[0]), Math.round(rgb[1]), Math.round(rgb[2])});
+        ledcontrol.setSeqColor(new int[]{Math.round(rgb[0]), Math.round(rgb[1]), Math.round(rgb[2])});
     }
 
     private void loadPresetSequences() {

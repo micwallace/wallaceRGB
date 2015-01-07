@@ -567,13 +567,11 @@
           <SubComponents>
             <MenuItem class="javax.swing.JRadioButtonMenuItem" name="ambmoderb">
               <Properties>
-                <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Ambient"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JRadioButtonMenuItem" name="seqmoderb">
               <Properties>
-                <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Sequence"/>
               </Properties>
             </MenuItem>

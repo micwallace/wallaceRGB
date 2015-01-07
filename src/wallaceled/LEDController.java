@@ -5,6 +5,11 @@
 package wallaceled;
 
 import java.awt.Color;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -19,7 +24,7 @@ public class LEDController {
     public final int AMBMODE = 1;
     public final int MANMODE = 2;
     public final int SEQMODE = 3;
-    private int curmode = AMBMODE; // current mode
+    private int curmode = MANMODE; // current mode
     private Ambient amb; // ambient robot/controller
     private Sequencer seq; // sequence controller
     public SerialConnect serial; // serial connection object
@@ -45,7 +50,13 @@ public class LEDController {
             Logger.getLogger(LEDController.class.getName()).log(Level.SEVERE, null, ex);
         }
         // start in ambience mode
-        amb.startAmb();
+        //amb.startAmb();
+        // start in manual mode
+        for (int i=1; i<=254;){
+            setColor(new int[]{0,0,i});
+            i += 10;
+        }
+        setColor(new int[]{0,0,255});
     }
     
     public void applySettings(int[] intset, boolean fadeon, boolean cfade){
@@ -191,7 +202,15 @@ public class LEDController {
         currentcolor = color;
         setColor(new int[]{color.getRed(), color.getGreen(), color.getBlue()});
     }
-    public void setColor(int[] rgb){
+    public void setSeqColor(int[] rgb){
+        if (curmode==SEQMODE)
+            setColor(rgb);
+    }
+    public void setAmbColor(int[] rgb){
+        if (curmode==AMBMODE)
+            setColor(rgb);
+    }
+    private void setColor(int[] rgb){
         setLED(rgb);
         currentcolor = new Color(rgb[0], rgb[1], rgb[2]);
     }

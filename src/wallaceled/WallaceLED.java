@@ -8,7 +8,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -16,7 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import jssc.SerialPortException;
-import org.jdesktop.swinghelper.tray.JXTrayIcon;
+import org.lantern.AppIndicatorTray;
 
 /**
  *
@@ -32,7 +37,7 @@ public class WallaceLED extends javax.swing.JFrame {
     public WallaceLED() {
         Handler handler;
         try {
-            handler = new FileHandler("C:\\WallaceRGB.log", 0, 1);
+            handler = new FileHandler(WallaceLED.class.getProtectionDomain().getCodeSource().getLocation().getPath()+"WallaceRGB.log", 0, 1);
             Logger.getLogger("").addHandler(handler);
         } catch (IOException | SecurityException ex) {
             Logger.getLogger(WallaceLED.class.getName()).log(Level.SEVERE, null, ex);
@@ -559,11 +564,9 @@ public class WallaceLED extends javax.swing.JFrame {
 
         ModeMenu.setText("Mode");
 
-        ambmoderb.setSelected(true);
         ambmoderb.setText("Ambient");
         ModeMenu.add(ambmoderb);
 
-        seqmoderb.setSelected(true);
         seqmoderb.setText("Sequence");
         ModeMenu.add(seqmoderb);
 
@@ -613,13 +616,13 @@ public class WallaceLED extends javax.swing.JFrame {
     int pvsavedmode = 0;
     Color pvsavedcolor;
     private void ColorPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ColorPanelMouseClicked
-        // TODO add your handling code here:
-        colordialog.pack();
-        colordialog.setLocationRelativeTo(ColorPanel);
-        colordialog.setVisible(true);
         // set current values to return from preview
         pvsavedmode = ledcontrol.getMode();
         pvsavedcolor = ColorPanel.getBackground();
+        colorpicker.setColor(pvsavedcolor);
+        colordialog.pack();
+        colordialog.setLocationRelativeTo(ColorPanel);
+        colordialog.setVisible(true);
     }//GEN-LAST:event_ColorPanelMouseClicked
 
     private void colorcancelbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorcancelbtnActionPerformed
@@ -968,22 +971,22 @@ public class WallaceLED extends javax.swing.JFrame {
         modegroup.add(seqmoderb);
         manmoderb.addActionListener(mclistener);
         modegroup.add(manmoderb);
-        modegroup.setSelected(ambmoderb.getModel(), rootPaneCheckingEnabled);
+        modegroup.setSelected(manmoderb.getModel(), rootPaneCheckingEnabled);
     }
 
     private void setModeSelected(int mode) {
         switch (mode) {
             case (1):
                 modegroup.setSelected(ambmoderb.getModel(), rootPaneCheckingEnabled);
-                traymgrp.setSelected(ambtrayrb.getModel(), rootPaneCheckingEnabled);
+                //traymgrp.setSelected(ambtrayrb.getModel(), rootPaneCheckingEnabled);
                 break;
             case (2):
                 modegroup.setSelected(manmoderb.getModel(), rootPaneCheckingEnabled);
-                traymgrp.setSelected(mantrayrb.getModel(), rootPaneCheckingEnabled);
+                //traymgrp.setSelected(mantrayrb.getModel(), rootPaneCheckingEnabled);
                 break;
             case (3):
                 modegroup.setSelected(seqmoderb.getModel(), rootPaneCheckingEnabled);
-                traymgrp.setSelected(seqtrayrb.getModel(), rootPaneCheckingEnabled);
+                //traymgrp.setSelected(seqtrayrb.getModel(), rootPaneCheckingEnabled);
                 break;
         }
         // reset the brightness; mode change coming from external source
@@ -993,18 +996,28 @@ public class WallaceLED extends javax.swing.JFrame {
     private void resetBrightSlide() {
         brightslider.setValue(100);
     }
-
-    private void toggleLights(ActionEvent e) { // used by tray and menu buttons
-        String lightstate = ((JMenuItem) e.getSource()).getText();
+    
+    public boolean toggleLights(ActionEvent e) { // used by tray and menu buttons
+        String lightstate = powermenubtn.getText();
         if (lightstate.equals("Lights Off!")) {
             ledcontrol.lightsOff();
-            powertraybtn.setText("Lights On!");
             powermenubtn.setText("Lights On!");
-        } else {
-            ledcontrol.lightsOn();
-            powertraybtn.setText("Lights Off!");
-            powermenubtn.setText("Lights Off!");
+            if (unitytray==null){
+                powertraybtn.setLabel("Lights On!");
+            } else {
+                unitytray.updateLightsLabel("Lights On!");
+            }
+            return true;
         }
+        
+        ledcontrol.lightsOn();
+        powermenubtn.setText("Lights Off!");
+        if (unitytray==null){
+            powertraybtn.setLabel("Lights Off!");
+        } else {
+            unitytray.updateLightsLabel("Lights Off!");
+        }
+        return false;
     }
     // System tray stuff
     /**
@@ -1013,112 +1026,60 @@ public class WallaceLED extends javax.swing.JFrame {
      * facebook.com/m.faisal6621
      *  thanks Mohammad!
      */
-    JMenuItem powertraybtn;
-    JRadioButtonMenuItem ambtrayrb;
-    JRadioButtonMenuItem seqtrayrb;
-    JRadioButtonMenuItem mantrayrb;
+    MenuItem powertraybtn;
+    //JRadioButtonMenuItem ambtrayrb;
+    //JRadioButtonMenuItem seqtrayrb;
+    //JRadioButtonMenuItem mantrayrb;
     ButtonGroup traymgrp;
-    JPopupMenu traymenu;
-    JXTrayIcon jxtrayIcon;
+    PopupMenu traymenu;
+    TrayIcon trayIcon;
     SystemTray tray;
+    AppIndicatorTray unitytray = null;
 
     private void HideToSystemTray() {
-        System.out.println("creating instance");
+        
+        // Set app look and feel
         try {
             System.out.println("setting look and feel");
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             System.out.println("Unable to set LookAndFeel");
         }
+        // Get distro
+        String distro = "";
+        String[] cmd = {"/bin/sh", "-c", "cat /etc/*-release" };
+        try {
+            Process p = Runtime.getRuntime().exec("uname -a");
+            BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            distro = bri.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Create applicable systray
+        if (distro.contains("Ubuntu")){
+            // check that icon exists
+            String path = WallaceLED.class.getProtectionDomain().getCodeSource().getLocation().getPath()+"WallaceLED.png";
+            File file = new File(path);
+            if (!file.exists()) {
+                InputStream link = (getClass().getResourceAsStream("img/RGBsmall.png"));
+                try {
+                    Files.copy(link, file.getAbsoluteFile().toPath());
+                } catch (IOException ex) {
+                    Logger.getLogger(WallaceLED.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            unitytray = new AppIndicatorTray(this);
+            unitytray.createTray();
+            System.out.println("creating ubuntu systemtray instance");
+            return;
+        }
+        System.out.println("creating normal systemtray instance");
         if (SystemTray.isSupported()) {
             System.out.println("system tray supported");
             tray = SystemTray.getSystemTray();
 
             Image image = Toolkit.getDefaultToolkit().getImage(WallaceLED.class.getResource("img/RGBsmall.png"));
             // AWT tray icon (doesn't allow radio buttons)
-            /*
-             * PopupMenu popup = new PopupMenu(); MenuItem menuItem = new
-             * MenuItem("Open"); menuItem.addActionListener(openListener);
-             * popup.add(menuItem); powertraybtn = new MenuItem("Lights Off!");
-             * powertraybtn.addActionListener(lightListener);
-             * popup.add(powertraybtn); menuItem = new MenuItem("Exit");
-             * menuItem.addActionListener(exitListener);
-            popup.add(menuItem);
-             */
-            // swing tray icon
-            genTrayMenu();
-
-            jxtrayIcon = new JXTrayIcon(image);
-            jxtrayIcon.setJPopupMenu(traymenu);
-            jxtrayIcon.setImageAutoSize(true);
-            //trayIcon = new TrayIcon(image, "wallaceRGB", popup);
-            //trayIcon.setImageAutoSize(true);
-            jxtrayIcon.addMouseListener(new MouseAdapter() {
-            public void mouseReleased(MouseEvent e) {
-                    traymenu.setLocation(e.getX(), e.getY());
-                    traymenu.setInvoker(traymenu);
-                    traymenu.setVisible(true);
-                    traymenu.pack();
-            }
-    });
-        } else {
-            System.out.println("system tray not supported");
-        }
-        addWindowStateListener(new WindowStateListener() {
-
-            @Override
-            public void windowStateChanged(WindowEvent e) {
-                if (e.getNewState() == ICONIFIED) {
-                    try {
-                        tray.add(jxtrayIcon);
-                        setVisible(false);
-                        System.out.println("added to SystemTray");
-                    } catch (AWTException ex) {
-                        System.out.println("unable to add to tray");
-                    }
-                }
-                if (e.getNewState() == 7) {
-                    try {
-                        tray.add(jxtrayIcon);
-                        setVisible(false);
-                        System.out.println("added to SystemTray");
-                    } catch (AWTException ex) {
-                        System.out.println("unable to add to system tray");
-                    }
-                }
-                if (e.getNewState() == MAXIMIZED_BOTH) {
-                    //tray.remove(trayIcon);
-                    setVisible(true);
-                    System.out.println("Tray icon removed");
-                }
-                if (e.getNewState() == NORMAL) {
-                    tray.remove(jxtrayIcon);
-                    setVisible(true);
-                    System.out.println("Tray icon removed");
-                }
-            }
-        });
-        setIconImage(Toolkit.getDefaultToolkit().getImage("img/RGBsmall.jpg"));
-        // hide when exit button pressed on window
-        this.addWindowListener(new WindowAdapter() {
-
-            @Override
-            public void windowClosing(WindowEvent e) {
-                try {
-                    setVisible(false);
-                    tray.add(jxtrayIcon);
-                    System.out.println("added to SystemTray");
-                } catch (AWTException ex) {
-                    Logger.getLogger(WallaceLED.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-        //setVisible(true);
-        setDefaultCloseOperation(JFrame.ICONIFIED);
-    }
-    
-    private void genTrayMenu(){
-        // listeners
             ActionListener exitListener = new ActionListener() {
 
                 @Override
@@ -1143,32 +1104,82 @@ public class WallaceLED extends javax.swing.JFrame {
                     toggleLights(e);
                 }
             };
-        // contruction
-        traymenu = new JPopupMenu();
-            JMenuItem menuItem = new JMenuItem("Open");
+            PopupMenu popup = new PopupMenu(); 
+            MenuItem menuItem = new MenuItem("Open"); 
             menuItem.addActionListener(openListener);
-            traymenu.add(menuItem);
-            powertraybtn = new JMenuItem("Lights Off!");
+            popup.add(menuItem); 
+            powertraybtn = new MenuItem("Lights Off!");
             powertraybtn.addActionListener(lightListener);
-            traymenu.add(powertraybtn);
-            JMenu traymode = new JMenu("Mode");
-                traymgrp = new ButtonGroup();
-                ambtrayrb = new JRadioButtonMenuItem("Ambient");
-                ambtrayrb.setSelected(true);
-                ambtrayrb.addActionListener(mclistener);
-                traymgrp.add(ambtrayrb);
-                traymode.add(ambtrayrb);
-                seqtrayrb = new JRadioButtonMenuItem("Sequence");
-                seqtrayrb.addActionListener(mclistener);
-                traymgrp.add(seqtrayrb);
-                traymode.add(seqtrayrb);
-                mantrayrb = new JRadioButtonMenuItem("Manual");
-                mantrayrb.addActionListener(mclistener);
-                traymgrp.add(mantrayrb);
-                traymode.add(mantrayrb);
-            traymenu.add(traymode);
-            menuItem = new JMenuItem("Exit");
+            popup.add(powertraybtn); 
+            menuItem = new MenuItem("Exit");
             menuItem.addActionListener(exitListener);
-            traymenu.add(menuItem);
+            popup.add(menuItem);
+            // swing tray icon
+            //genTrayMenu();
+
+            trayIcon = new TrayIcon(image);
+            trayIcon.setPopupMenu(traymenu);
+            trayIcon.setImageAutoSize(true);
+            try {
+                tray.add(trayIcon);
+            } catch (AWTException ex) {
+                Logger.getLogger(WallaceLED.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        } else {
+            System.out.println("system tray not supported");
+            return;
+        }
+        addWindowStateListener(new WindowStateListener() {
+
+            @Override
+            public void windowStateChanged(WindowEvent e) {
+                if (e.getNewState() == ICONIFIED) {
+                    try {
+                        tray.add(trayIcon);
+                        setVisible(false);
+                        System.out.println("added to SystemTray");
+                    } catch (AWTException ex) {
+                        System.out.println("unable to add to tray");
+                    }
+                }
+                if (e.getNewState() == 7) {
+                    try {
+                        tray.add(trayIcon);
+                        setVisible(false);
+                        System.out.println("added to SystemTray");
+                    } catch (AWTException ex) {
+                        System.out.println("unable to add to system tray");
+                    }
+                }
+                if (e.getNewState() == MAXIMIZED_BOTH) {
+                    //tray.remove(trayIcon);
+                    setVisible(true);
+                    System.out.println("Tray icon removed");
+                }
+                if (e.getNewState() == NORMAL) {
+                    tray.remove(trayIcon);
+                    setVisible(true);
+                    System.out.println("Tray icon removed");
+                }
+            }
+        });
+        setIconImage(Toolkit.getDefaultToolkit().getImage("img/RGBsmall.jpg"));
+        // hide when exit button pressed on window
+        this.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    setVisible(false);
+                    tray.add(trayIcon);
+                    System.out.println("added to SystemTray");
+                } catch (AWTException ex) {
+                    Logger.getLogger(WallaceLED.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        //setVisible(true);
+        setDefaultCloseOperation(JFrame.ICONIFIED);
     }
 }
