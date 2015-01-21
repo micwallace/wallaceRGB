@@ -143,17 +143,19 @@ public class AppIndicatorTray {
     Pointer lightsItem;
     private void addLightsButton(){
         lightsItem = libgtk.gtk_menu_item_new_with_label("Lights Off!"); // XXX i18n
-        Gobject.GCallback lightsItemCallback = new Gobject.GCallback() {
+        
+        libgobject.g_signal_connect_data(lightsItem, "activate", lightsItemCallback, null, null, 0);
+        libgtk.gtk_menu_shell_append(menu, lightsItem);
+        libgtk.gtk_widget_show_all(lightsItem);
+    }
+    
+    public Gobject.GCallback lightsItemCallback = new Gobject.GCallback() {
             @Override
             public void callback(Pointer instance, Pointer data) {
                 System.out.println("Callback called");
                 app.toggleLights(null);
             }
-        };
-        libgobject.g_signal_connect_data(lightsItem, "activate", lightsItemCallback, null, null, 0);
-        libgtk.gtk_menu_shell_append(menu, lightsItem);
-        libgtk.gtk_widget_show_all(lightsItem);
-    }
+    };
     
     public void updateLightsLabel(String label){
         updateMenuLabel(lightsItem, label);

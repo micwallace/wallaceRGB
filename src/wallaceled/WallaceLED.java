@@ -1072,9 +1072,8 @@ public class WallaceLED extends javax.swing.JFrame {
             unitytray.createTray();
             System.out.println("creating ubuntu systemtray instance");
             return;
-        }
-        System.out.println("creating normal systemtray instance");
-        if (SystemTray.isSupported()) {
+        } else if (SystemTray.isSupported()) {
+            System.out.println("creating normal systemtray instance");
             System.out.println("system tray supported");
             tray = SystemTray.getSystemTray();
 
@@ -1135,32 +1134,22 @@ public class WallaceLED extends javax.swing.JFrame {
             @Override
             public void windowStateChanged(WindowEvent e) {
                 if (e.getNewState() == ICONIFIED) {
-                    try {
-                        tray.add(trayIcon);
-                        setVisible(false);
-                        System.out.println("added to SystemTray");
-                    } catch (AWTException ex) {
-                        System.out.println("unable to add to tray");
-                    }
+                    setVisible(false);
+                    setExtendedState(JFrame.ICONIFIED);
+                    System.out.println("Minimized to SystemTray");
                 }
                 if (e.getNewState() == 7) {
-                    try {
-                        tray.add(trayIcon);
-                        setVisible(false);
-                        System.out.println("added to SystemTray");
-                    } catch (AWTException ex) {
-                        System.out.println("unable to add to system tray");
-                    }
+                    setVisible(false);
+                    setExtendedState(JFrame.ICONIFIED);
+                    System.out.println("Minimized to SystemTray");
                 }
                 if (e.getNewState() == MAXIMIZED_BOTH) {
-                    //tray.remove(trayIcon);
                     setVisible(true);
-                    System.out.println("Tray icon removed");
+                    setExtendedState(JFrame.NORMAL);
                 }
                 if (e.getNewState() == NORMAL) {
-                    tray.remove(trayIcon);
                     setVisible(true);
-                    System.out.println("Tray icon removed");
+                    setExtendedState(JFrame.NORMAL);
                 }
             }
         });
@@ -1170,16 +1159,12 @@ public class WallaceLED extends javax.swing.JFrame {
 
             @Override
             public void windowClosing(WindowEvent e) {
-                try {
-                    setVisible(false);
-                    tray.add(trayIcon);
-                    System.out.println("added to SystemTray");
-                } catch (AWTException ex) {
-                    Logger.getLogger(WallaceLED.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                setVisible(false);
+                System.out.println("Minimized to SystemTray");
             }
         });
         //setVisible(true);
-        setDefaultCloseOperation(JFrame.ICONIFIED);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
+    
 }
